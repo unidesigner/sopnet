@@ -74,28 +74,6 @@ void handleException(boost::exception& e) {
 	exit(-1);
 }
 
-void processEvents(boost::shared_ptr<gui::Window> window) {
-
-	LOG_USER(out) << " started as " << window->getCaption() << " at " << window.get() << std::endl;
-
-	while (!window->closed()) {
-
-		try {
-
-			usleep(100);
-			window->processEvents();
-
-		} catch (boost::exception& e) {
-
-			handleException(e);
-		}
-	}
-
-	LOG_USER(out) << "[window thread] releasing shared pointer to window" << std::endl;
-
-	LOG_USER(out) << "[window thread] quitting" << std::endl;
-}
-
 int main(int optionc, char** optionv) {
 
 	try {
@@ -118,10 +96,9 @@ int main(int optionc, char** optionv) {
 
 		// create a window
 		boost::shared_ptr<gui::Window> window = boost::make_shared<gui::Window>("sopnet");
-		window->processEvents();
 
 		// create a zoom view for this window
-		boost::shared_ptr<gui::ZoomView> zoomView = boost::make_shared<gui::ZoomView>();
+		boost::shared_ptr<gui::ZoomView> zoomView = boost::make_shared<gui::ZoomView>(true);
 		window->setInput(zoomView->getOutput());
 
 		// create main container view
@@ -202,11 +179,7 @@ int main(int optionc, char** optionv) {
 			graphCutSequence->createSequence();
 		}
 
-		while (!window->closed()) {
-
-			window->processEvents();
-			usleep(1000);
-		}
+        window->processEvents();
 
 		LOG_USER(out) << "[main] exiting..." << std::endl;
 

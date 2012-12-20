@@ -18,7 +18,7 @@ GraphCut::GraphCut() :
 
 	registerInput(_image,"image");
 	registerInput(_parameters,"parameters");
-	registerInput(_pottsImage, "potts image");
+	registerInput(_pottsImage, "potts image", pipeline::Optional);
 
 	registerOutput(_segmentation, "segmentation");
 	registerOutput(_energy, "energy");
