@@ -57,20 +57,21 @@ ProblemGraphWriter::writeSlices(
 
 	std::ofstream out(slicesFile.c_str());
 
+	out << "# id section bb.minX bb.maxX bb.minY bb.maxY value center.x center.y size" << std::endl;
+
 	foreach (boost::shared_ptr<EndSegment> end, _segments->getEnds()) {
 
 		if (end->getDirection() == Left)
 			writeSlice(*end->getSlice(), out);
 	}
 
-	LOG_DEBUG(problemgraphwriterlog) << "writing slice imagess to " << sliceImageDirectory << std::endl;
+	LOG_DEBUG(problemgraphwriterlog) << "writing slice images to " << sliceImageDirectory << std::endl;
 
 	foreach (boost::shared_ptr<EndSegment> end, _segments->getEnds()) {
 
 		if (end->getDirection() == Left)
 			writeSliceImage(*end->getSlice(), sliceImageDirectory);
 	}
-	// TODO
 }
 
 void
@@ -79,6 +80,8 @@ ProblemGraphWriter::writeSegments(const std::string& segmentsFile) {
 	LOG_DEBUG(problemgraphwriterlog) << "writing segments to " << segmentsFile << std::endl;
 
 	std::ofstream out(segmentsFile.c_str());
+
+	out << "# segmentid number_of_slices (1=end,2=continuation,3=branch) (sliceids)* cost" << std::endl;
 
 	foreach (boost::shared_ptr<EndSegment> end, _segments->getEnds())
 		writeSegment(*end, out);
@@ -103,9 +106,17 @@ ProblemGraphWriter::writeSlice(const Slice& slice, std::ofstream& out) {
 
 	LOG_DEBUG(problemgraphwriterlog) << "writing slices" << std::endl;
 
-	// TODO: write whatever you want to know about a slice into out
-
-	//slice.getComponent()...
+	out << slice.getId() << " ";
+	out << slice.getSection() << " ";
+	out << slice.getComponent()->getBoundingBox().minX << " ";
+	out << slice.getComponent()->getBoundingBox().maxX << " ";
+	out << slice.getComponent()->getBoundingBox().minY << " ";
+	out << slice.getComponent()->getBoundingBox().maxY << " ";
+	out << slice.getComponent()->getValue() << " ";
+	out << slice.getComponent()->getCenter().x << " ";
+	out << slice.getComponent()->getCenter().y << " ";
+	out << slice.getComponent()->getSize() << " ";
+	out << std::endl;
 }
 
 void
