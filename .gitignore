@@ -4,3 +4,5 @@ build
 .project
 .hg
 .hgignore
+.idea
+*~

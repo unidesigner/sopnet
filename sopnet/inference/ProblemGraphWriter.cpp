@@ -57,7 +57,7 @@ ProblemGraphWriter::writeSlices(
 
 	std::ofstream out(slicesFile.c_str());
 
-	out << "# id section bb.minX bb.maxX bb.minY bb.maxY value center.x center.y size" << std::endl;
+	out << "id sectionid section bb.minX bb.maxX bb.minY bb.maxY value center.x center.y size" << std::endl;
 
 	foreach (boost::shared_ptr<EndSegment> end, _segments->getEnds()) {
 
