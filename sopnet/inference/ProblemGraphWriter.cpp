@@ -57,7 +57,7 @@ ProblemGraphWriter::writeSlices(
 
 	std::ofstream out(slicesFile.c_str());
 
-	out << "id sectionid section bb.minX bb.maxX bb.minY bb.maxY value center.x center.y size" << std::endl;
+	out << "id sectionid bb.minX bb.maxX bb.minY bb.maxY value center.x center.y size" << std::endl;
 
 	foreach (boost::shared_ptr<EndSegment> end, _segments->getEnds()) {
 
@@ -81,7 +81,7 @@ ProblemGraphWriter::writeSegments(const std::string& segmentsFile) {
 
 	std::ofstream out(segmentsFile.c_str());
 
-	out << "# segmentid number_of_slices (1=end,2=continuation,3=branch) (sliceids)* cost" << std::endl;
+	// out << "segmentid type (sliceids)* cost direction" << std::endl;
 
 	foreach (boost::shared_ptr<EndSegment> end, _segments->getEnds())
 		writeSegment(*end, out);
@@ -141,10 +141,14 @@ ProblemGraphWriter::writeSegment(const Segment& segment, std::ofstream& out) {
 
 	foreach (boost::shared_ptr<Slice> slice, segment.getSlices()) {
 
+        out << " " << slice->getSection();
+
 		out << " " << slice->getId();
 	}
 
 	out << " " << _objective->getCoefficients()[(*_segmentIdsToVariables)[segment.getId()]];
+    
+    out << " " << segment.getDirection();
 
 	out << std::endl;
 }
