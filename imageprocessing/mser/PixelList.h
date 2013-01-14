@@ -7,7 +7,7 @@ struct PixelList {
 
 	PixelList() {};
 
-	PixelList(int size) :
+	PixelList(size_t size) :
 		prev(size, None),
 		next(size, None) {}
 
@@ -17,13 +17,13 @@ struct PixelList {
 		next.resize(size);
 	}
 
-	unsigned int size() const {
+	size_t size() const {
 
 		return prev.size();
 	}
 
-	std::vector<int> prev;
-	std::vector<int> next;
+	std::vector<size_t> prev;
+	std::vector<size_t> next;
 };
 
 #endif // IMAGEPROCESSING_MSER_PIXEL_LIST_H__

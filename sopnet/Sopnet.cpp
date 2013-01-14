@@ -281,6 +281,7 @@ Sopnet::createInferencePipeline() {
 		_problemWriter->setInput("segments", _problemAssembler->getOutput("segments"));
 		_problemWriter->setInput("segment ids map", _problemAssembler->getOutput("segment ids map"));
 		_problemWriter->setInput("objective", _objectiveGenerator->getOutput("objective"));
+		_problemWriter->setInput("features", _segmentFeaturesExtractor->getOutput("all features"));
 	}
 }
 

@@ -79,7 +79,7 @@ private:
 	pipeline::Output<ComponentTree> _componentTree;
 
 	// the number of pixels to process
-	int _size;
+	size_t _size;
 
 	// integer values in the range [0,255] that represent the image
 	std::vector<unsigned char> _values;

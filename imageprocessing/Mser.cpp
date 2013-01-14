@@ -55,12 +55,20 @@ Mser::allocate() {
 
 	LOG_ALL(mserlog) << "allocating memory for " << _size << " pixels" << std::endl;
 
+	LOG_ALL(mserlog) << "resize _values" << std::endl;
 	_values.resize(_size);
+	LOG_ALL(mserlog) << "resize _visited" << std::endl;
 	_visited.resize(_size);
+	LOG_ALL(mserlog) << "resize _pixelList" << std::endl;
 	_pixelList.resize(_size);
+	LOG_ALL(mserlog) << "resize _nextNeighbors" << std::endl;
 	_nextNeighbors.resize(_size);
+	LOG_ALL(mserlog) << "resize _stacks" << std::endl;
 	_stacks.resize(256);
+	LOG_ALL(mserlog) << "resize _histories" << std::endl;
+	// _histories.resize(_size);
 	_histories.resize(_size);
+	LOG_ALL(mserlog) << "resize _regions" << std::endl;
 	_regions.resize(257);
 }
 
@@ -105,7 +113,7 @@ void
 Mser::reset() {
 
 	// reset the contents of the per-pixel data strucures
-	for (int i = 0; i < _size; i++) {
+	for (size_t i = 0; i < _size; i++) {
 
 		_visited[i]       = false;
 		_nextNeighbors[i] = 0;

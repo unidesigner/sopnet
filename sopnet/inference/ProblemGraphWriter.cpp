@@ -3,6 +3,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <vigra/impex.hxx>
+#include <vigra/impexalpha.hxx>
 
 #include "ProblemGraphWriter.h"
 
@@ -20,6 +21,7 @@ ProblemGraphWriter::ProblemGraphWriter() {
 	registerInput(_segmentIdsToVariables, "segment ids map");
 	registerInput(_objective, "objective");
 	registerInputs(_linearConstraints, "linear constraints");
+	registerInput(_features, "features");
 }
 
 void
@@ -27,7 +29,9 @@ ProblemGraphWriter::write(
 		const std::string& slicesFile,
 		const std::string& segmentsFile,
 		const std::string& constraintsFile,
-		const std::string& sliceImageDirectory) {
+		const std::string& sliceImageDirectory,
+		int originSlice,
+		int targetSlice) {
 
 	if (!_segments || !_segmentIdsToVariables || !_objective) {
 
@@ -37,11 +41,11 @@ ProblemGraphWriter::write(
 
 	updateInputs();
 
-	LOG_DEBUG(problemgraphwriterlog) << "dumping problem graph..." << std::endl;
+	LOG_DEBUG(problemgraphwriterlog) << "dumping problem graph..." << originSlice << std::endl;
 
-	writeSlices(slicesFile, sliceImageDirectory);
+	writeSlices(slicesFile, sliceImageDirectory, originSlice, targetSlice);
 
-	writeSegments(segmentsFile);
+	writeSegments(segmentsFile, originSlice, targetSlice);
 
 	writeConstraints();
 
@@ -51,7 +55,9 @@ ProblemGraphWriter::write(
 void
 ProblemGraphWriter::writeSlices(
 		const std::string& slicesFile,
-		const std::string& sliceImageDirectory) {
+		const std::string& sliceImageDirectory,
+		int originSlice,
+		int targetSlice) {
 
 	LOG_DEBUG(problemgraphwriterlog) << "writing slices to " << slicesFile << std::endl;
 
@@ -70,27 +76,36 @@ ProblemGraphWriter::writeSlices(
 	foreach (boost::shared_ptr<EndSegment> end, _segments->getEnds()) {
 
 		if (end->getDirection() == Left)
-			writeSliceImage(*end->getSlice(), sliceImageDirectory);
+			writeSliceImage(*end->getSlice(), sliceImageDirectory, originSlice, targetSlice);
 	}
 }
 
 void
-ProblemGraphWriter::writeSegments(const std::string& segmentsFile) {
+ProblemGraphWriter::writeSegments(const std::string& segmentsFile, int originSlice, int targetSlice) {
 
 	LOG_DEBUG(problemgraphwriterlog) << "writing segments to " << segmentsFile << std::endl;
 
 	std::ofstream out(segmentsFile.c_str());
 
-	// out << "segmentid type (sliceids)* cost direction" << std::endl;
+	out << "segmentid,type,section_origin,origin_slice_id,section_target1,target1_slice_id,section_target2,target2_slice_id,cost,direction,";
+
+	const std::vector<std::string>& names    = _features->getNames();
+
+	for (unsigned int i = 0; i < names.size(); i++) {
+		if (i < names.size())
+			out << names[i] << ",";
+	}
+
+	out << std::endl;
 
 	foreach (boost::shared_ptr<EndSegment> end, _segments->getEnds())
-		writeSegment(*end, out);
+		writeSegment(*end, out, originSlice, targetSlice);
 
 	foreach (boost::shared_ptr<ContinuationSegment> continuation, _segments->getContinuations())
-		writeSegment(*continuation, out);
+		writeSegment(*continuation, out, originSlice, targetSlice);
 
 	foreach (boost::shared_ptr<BranchSegment> branch, _segments->getBranches())
-		writeSegment(*branch, out);
+		writeSegment(*branch, out, originSlice, targetSlice);
 
 	out.close();
 }
@@ -120,35 +135,75 @@ ProblemGraphWriter::writeSlice(const Slice& slice, std::ofstream& out) {
 }
 
 void
-ProblemGraphWriter::writeSliceImage(const Slice& slice, const std::string& sliceImageDirectory) {
+ProblemGraphWriter::writeSliceImage(const Slice& slice, const std::string& sliceImageDirectory, int originSection, int targetSection) {
 
 	unsigned int section = slice.getSection();
 	unsigned int id      = slice.getId();
+	int section_to_process = 0;
+	if( section == 0 ) {
+		section_to_process = originSection;
+	} else {
+		section_to_process = targetSection;
+	};
 
-	std::string filename = sliceImageDirectory + "/" + boost::lexical_cast<std::string>(section) + "_" + boost::lexical_cast<std::string>(id) + ".png";
+	std::string filename = sliceImageDirectory + "/" + boost::lexical_cast<std::string>(section_to_process) + "_" + boost::lexical_cast<std::string>(id) + ".png";
 
-	vigra::exportImage(vigra::srcImageRange(slice.getComponent()->getBitmap()), vigra::ImageExportInfo(filename.c_str()));
+ // invert https://github.com/ukoethe/vigra/blob/master/src/examples/invert.cxx
+
+	vigra::exportImageAlpha(
+	 vigra::srcImageRange(slice.getComponent()->getBitmap()),
+	 vigra::srcImage(slice.getComponent()->getBitmap()),
+	 vigra::ImageExportInfo(filename.c_str()));
 }
 
 void
-ProblemGraphWriter::writeSegment(const Segment& segment, std::ofstream& out) {
+ProblemGraphWriter::writeSegment(const Segment& segment, std::ofstream& out, int originSection, int targetSection) {
 
 	LOG_ALL(problemgraphwriterlog) << "writing segment " << segment.getId() << std::endl;
 
 	out << segment.getId() << " ";
 
-	out << segment.getSlices().size();
+	int slice_size = segment.getSlices().size();
 
+	out << slice_size;
+
+
+	// FIXME: get section and check which to set.
 	foreach (boost::shared_ptr<Slice> slice, segment.getSlices()) {
-
-        out << " " << slice->getSection();
-
+		if( slice->getSection() == 0 ) {
+			out << " " << originSection;
+		} else {
+			out << " " << targetSection;
+		};
+        //out << " " << slice->getSection();
 		out << " " << slice->getId();
+	}
+
+	switch( slice_size )
+  	{
+		case 1:
+			out << " " << "None" << " " << "None";
+			out << " " << "None" << " " << "None";
+			break;
+		case 2:
+			out << " " << "None" << " " << "None";
+			break;
+		case 3:
+			break;
 	}
 
 	out << " " << _objective->getCoefficients()[(*_segmentIdsToVariables)[segment.getId()]];
     
     out << " " << segment.getDirection();
 
+	const std::vector<double>&      features = _features->get(segment.getId());
+	const std::vector<std::string>& names    = _features->getNames();
+
+	for (unsigned int i = 0; i < features.size(); i++) {
+		out << features[i] << " ";
+	}
+
 	out << std::endl;
+
+
 }

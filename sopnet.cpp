@@ -65,6 +65,18 @@ util::ProgramOption optionDumpProblemGraph(
 		_long_name        = "dumpProblemGraph",
 		_description_text = "Dump the problem as a lemon graph.");
 
+util::ProgramOption optionOriginSection(
+		_module           = "sopnet",
+		_long_name        = "originSection",
+		_description_text = "The number of the origin section.",
+		_default_value    = 0);
+
+util::ProgramOption optionTargetSection(
+		_module           = "sopnet",
+		_long_name        = "targetSection",
+		_description_text = "The number of the origin section.",
+		_default_value    = 1);
+
 util::ProgramOption optionFirstSection(
 		_module           = "sopnet",
 		_long_name        = "firstSection",
@@ -255,6 +267,9 @@ int main(int optionc, char** optionv) {
 			slicesReader      = boost::make_shared<ImageStackHdf5Reader>(projectFilename, "vncstack", "slices");
 			groundTruthReader = boost::make_shared<ImageStackHdf5Reader>(projectFilename, "vncstack", "groundtruth");
 		}
+
+		int originSection = optionOriginSection;
+		int targetSection  = optionTargetSection;
 
 		// select a substack, if options are set
 		if (optionFirstSection || optionLastSection) {
@@ -565,7 +580,7 @@ int main(int optionc, char** optionv) {
 
 		LOG_USER(out) << "[main] asking problem writer for dump..." << std::endl;
 
-		problemWriter->write("./dump/slices.txt", "./dump/segments.txt", "./dump/constraints.txt", "./dump/slices/");
+		problemWriter->write("./dump/slices.txt", "./dump/segments.txt", "./dump/constraints.txt", "./dump/slices/", originSection, targetSection);
 
 		LOG_USER(out) << "[main] exiting..." << std::endl;
 
