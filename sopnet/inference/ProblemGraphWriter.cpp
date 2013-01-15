@@ -87,7 +87,7 @@ ProblemGraphWriter::writeSegments(const std::string& segmentsFile, int originSli
 
 	std::ofstream out(segmentsFile.c_str());
 
-	out << "segmentid,type,section_origin,origin_slice_id,section_target1,target1_slice_id,section_target2,target2_slice_id,cost,direction,";
+	out << "segmentid,type,origin_section,origin_slice_id,target1_section,target1_slice_id,target2_section,target2_slice_id,cost,direction,";
 
 	const std::vector<std::string>& names    = _features->getNames();
 
@@ -182,11 +182,11 @@ ProblemGraphWriter::writeSegment(const Segment& segment, std::ofstream& out, int
 	switch( slice_size )
   	{
 		case 1:
-			out << " " << "None" << " " << "None";
-			out << " " << "None" << " " << "None";
+			out << " " << "-1" << " " << "-1";
+			out << " " << "-1" << " " << "-1";
 			break;
 		case 2:
-			out << " " << "None" << " " << "None";
+			out << " " << "-1" << " " << "-1";
 			break;
 		case 3:
 			break;
@@ -194,7 +194,7 @@ ProblemGraphWriter::writeSegment(const Segment& segment, std::ofstream& out, int
 
 	out << " " << _objective->getCoefficients()[(*_segmentIdsToVariables)[segment.getId()]];
     
-    out << " " << segment.getDirection();
+    out << " " << segment.getDirection() << " ";
 
 	const std::vector<double>&      features = _features->get(segment.getId());
 	const std::vector<std::string>& names    = _features->getNames();
